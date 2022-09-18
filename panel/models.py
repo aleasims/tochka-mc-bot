@@ -3,19 +3,22 @@ from django.db import models
 
 class TGAdmin(models.Model):
     """Admin user."""
-    user_id = models.IntegerField(verbose_name='Telegram ID',
-                                  name='user_id',
-                                  unique=True)
+    tg_id = models.IntegerField(verbose_name='Telegram ID',
+                                name='tg_id',
+                                unique=True)
     name = models.CharField(verbose_name='Name',
                             name='name',
-                            max_length=100,)
+                            max_length=100)
 
 
 class User(models.Model):
     """Normal user."""
-    user_id = models.IntegerField(verbose_name='Telegram ID',
-                                  name='user_id',
-                                  unique=True)
+    tg_id = models.IntegerField(verbose_name='Telegram ID',
+                                name='tg_id',
+                                unique=True)
+    name = models.CharField(verbose_name='Name',
+                            name='name',
+                            max_length=100)
 
 
 class Course(models.Model):
@@ -28,7 +31,7 @@ class Course(models.Model):
                                    blank=False)
     order = models.IntegerField(verbose_name='Order',
                                 name='order',
-                                default=0)
+                                default=1)
 
 
 class Recording(models.Model):
