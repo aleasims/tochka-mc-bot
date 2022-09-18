@@ -1,6 +1,4 @@
-from django.http import HttpResponse
-from django.shortcuts import render
+from django.http import HttpResponse, HttpRequest
 
-def index(request):
-    return render(request, 'index.html')
-    # return HttpResponse("panel page")
+def index(request: HttpRequest):
+    return HttpResponse("Panel page will be here")

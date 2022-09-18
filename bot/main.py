@@ -1,6 +1,6 @@
 import os
 
-# this must be done before importing django models
+# this setup must be done before importing django models
 import django
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'botback.settings.dev')
 django.setup()
@@ -17,9 +17,14 @@ from telegram.ext import (Application, CommandHandler, ConversationHandler,
 from bot.conversation_manager import ConversationManager
 from bot.database_manager import DatabaseManager
 
+TOKEN = os.environ.get('TG_TOKEN')
+if TOKEN is None:
+    raise RuntimeError("Telegram Bot API token not found (env variable `TG_TOKEN` must be set")
+
+CONVERSATION_DUMP = 'dump.pickle'
+
 if __name__ == '__main__':
-    TOKEN = os.environ.get('TG_TOKEN')
-    persistence = PicklePersistence('dump.pickle')
+    persistence = PicklePersistence(CONVERSATION_DUMP)
     app = Application.builder().concurrent_updates(False).persistence(persistence).token(TOKEN).build()
 
     db_manager = DatabaseManager()
