@@ -34,6 +34,30 @@ class DatabaseManager:
         user.save()
 
     @sync_to_async
+    def update_user(self, tg_id: int, **kwargs):
+        """This function can update User info.
+
+        Accepts possible keyword args: `name`, `surname`, `group_id`
+        """
+
+        try:
+            user = User.objects.get(tg_id=tg_id)
+        except User.DoesNotExist:
+            return
+
+        name = kwargs.get('name')
+        surname = kwargs.get('surname')
+        group_id = kwargs.get('group_id')
+        if name is not None:
+            user.name = name
+        if surname is not None:
+            user.surname = surname
+        if group_id is not None:
+            user.group_id = group_id
+        user.save()
+
+
+    @sync_to_async
     def delete_user(self, tg_id: int):
         User.objects.filter(tg_id=tg_id).delete()
 
