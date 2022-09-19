@@ -80,7 +80,7 @@ class Application(models.Model):
     user = models.ForeignKey(User,
                              on_delete=models.PROTECT,
                              verbose_name='Пользователь',
-                             name='recording')
+                             name='user')
     course = models.ForeignKey(Course,
                                on_delete=models.PROTECT,
                                verbose_name='Курс',
