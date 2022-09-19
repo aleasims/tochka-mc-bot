@@ -1,15 +1,11 @@
+import argparse
+import logging
 import os
 
 # this setup must be done before importing django models
 import django
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'botback.settings.dev')
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "botback.settings.dev")
 django.setup()
-
-import logging
-logging.basicConfig(
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    level=logging.INFO
-)
 
 from telegram.ext import (Application, CommandHandler, ConversationHandler,
                           MessageHandler, filters, PicklePersistence)
@@ -17,30 +13,83 @@ from telegram.ext import (Application, CommandHandler, ConversationHandler,
 from bot.conversation_manager import ConversationManager
 from bot.database_manager import DatabaseManager
 
-TOKEN = os.environ.get('TG_TOKEN')
+TOKEN = os.environ.get("TG_TOKEN")
 if TOKEN is None:
-    raise RuntimeError("Telegram Bot API token not found (env variable `TG_TOKEN` must be set")
+    raise RuntimeError("Telegram Bot API token not found "
+                       "(environment variable `TG_TOKEN` must be set)")
 
-CONVERSATION_DUMP = 'dump.pickle'
+CONVERSATION_DUMP = "conversation.pickle"
 
-if __name__ == '__main__':
+
+def build_app() -> Application:
     persistence = PicklePersistence(CONVERSATION_DUMP)
-    app = Application.builder().concurrent_updates(False).persistence(persistence).token(TOKEN).build()
+    app = Application.builder().concurrent_updates(False)\
+        .persistence(persistence).token(TOKEN).build()
 
     db_manager = DatabaseManager()
-    c_manager = ConversationManager(db_manager)
+    conv = ConversationManager(db_manager)
 
     app.add_handler(ConversationHandler(
         name="convhandler",
-        entry_points=[CommandHandler('start', c_manager.start)],
+        entry_points=[
+            CommandHandler("start", conv.start),
+            CommandHandler("admin", conv.admin_on),
+        ],
+        allow_reentry=False,
         states= {
-            ConversationManager.State.REGISTRATION: [
-                MessageHandler(filters.TEXT, c_manager.register),
+            ConversationManager.State.ADMIN: [
+                CommandHandler("registered", conv.registered),
             ],
+            ConversationManager.State.REGISTRATION: [
+                MessageHandler(filters.TEXT & (~ filters.COMMAND),
+                               conv.register),
+                CommandHandler("admin", conv.admin_on),
+            ],
+            ConversationManager.State.MAIN_MENU: [],
         },
         conversation_timeout=None,
         persistent=True,
-        fallbacks=[],
+        fallbacks=[
+            CommandHandler("stop", conv.stop),
+            CommandHandler("admin", conv.admin_on),
+        ],
     ))
 
+    app.add_error_handler(conv.error)
+
+    return app
+
+
+def parse_args():
+    parser = argparse.ArgumentParser(description="Run Telegram Bot polling")
+    parser.add_argument("--clear",
+                        "-c",
+                        action="store_true",
+                        help="Clear all conversation states.")
+    parser.add_argument("--verbose",
+                        "-v",
+                        action="store_true",
+                        help="Verbosity level.")
+    return parser.parse_args()
+
+
+def main():
+    args = parse_args()
+
+    if args.clear:
+        try:
+            os.remove(CONVERSATION_DUMP)
+        except FileNotFoundError:
+            pass
+
+    logging.basicConfig(
+        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+        level=logging.DEBUG if args.verbose else logging.INFO
+    )
+
+    app = build_app()
     app.run_polling()
+
+
+if __name__ == "__main__":
+    main()

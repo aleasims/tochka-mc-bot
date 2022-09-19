@@ -3,7 +3,8 @@ from django.db import models
 
 class TGAdmin(models.Model):
     """Admin user."""
-    tg_id = models.IntegerField(verbose_name='Telegram ID',
+    tg_id = models.BigIntegerField(primary_key=True,
+                                verbose_name='Telegram ID',
                                 name='tg_id',
                                 unique=True)
     name = models.CharField(verbose_name='Name',
@@ -13,7 +14,8 @@ class TGAdmin(models.Model):
 
 class User(models.Model):
     """Normal user."""
-    tg_id = models.IntegerField(verbose_name='Telegram ID',
+    tg_id = models.BigIntegerField(primary_key=True,
+                                verbose_name='Telegram ID',
                                 name='tg_id',
                                 unique=True)
     name = models.CharField(verbose_name='Name',
