@@ -43,11 +43,16 @@ def build_app() -> Application:
                 CommandHandler("scheduled", conv.admin.scheduled),
                 CommandHandler("sendall", conv.admin.send_all),
             ],
-            ConversationManager.State.REGISTRATION: [
-                MessageHandler(filters.TEXT & (~ filters.COMMAND),
-                               conv.register),
-            ],
             ConversationManager.State.MAIN_MENU: [],
+            ConversationManager.State.REGISTER_NAME: [
+                MessageHandler(filters.TEXT & (~ filters.COMMAND), conv.register_name),
+            ],
+            ConversationManager.State.REGISTER_SURNAME: [
+                MessageHandler(filters.TEXT & (~ filters.COMMAND), conv.register_surname),
+            ],
+            ConversationManager.State.REGISTER_GROUPID: [
+                MessageHandler(filters.TEXT & (~ filters.COMMAND), conv.register_groupid),
+            ],
         },
         conversation_timeout=None,
         persistent=True,

@@ -28,6 +28,12 @@ class User(models.Model):
     name = models.CharField(verbose_name='Имя',
                             name='name',
                             max_length=100)
+    surname = models.CharField(verbose_name='Фамилия',
+                            name='surname',
+                            max_length=100)
+    group_id = models.CharField(verbose_name='Номер группы',
+                            name='group_id',
+                            max_length=100)
 
     class Meta:
         verbose_name = 'Участник'
@@ -45,6 +51,18 @@ class Course(models.Model):
     description = models.TextField(verbose_name='Описание',
                                    name='description',
                                    blank=False)
+    who = models.CharField(verbose_name='Преподаватели',
+                            name='who',
+                            max_length=200)
+    where = models.CharField(verbose_name='Место',
+                            name='where',
+                            max_length=200)
+    day = models.CharField(verbose_name='День недели',
+                            name='day',
+                            max_length=200)
+    time = models.CharField(verbose_name='Время',
+                            name='when',
+                            max_length=200)
     order = models.IntegerField(verbose_name='Порядковый номер',
                                 name='order',
                                 default=1)
