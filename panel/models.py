@@ -88,7 +88,7 @@ class Message(models.Model):
         verbose_name_plural = 'Сообщения'
 
     def __str__(self):
-        return "{} -> {}".format(self.user, self.course)
+        return "{}...".format(self.text[:20])
 
 
 class ScheduledMessage(models.Model):
@@ -103,3 +103,10 @@ class ScheduledMessage(models.Model):
                                   on_delete=models.PROTECT,
                                   verbose_name='Получатель',
                                   name='recipient')
+
+    class Meta:
+        verbose_name = 'Запланированная отправка'
+        verbose_name_plural = 'Запланированные отправки'
+
+    def __str__(self):
+        return "{} -> {}".format(self.message, self.recipient)
