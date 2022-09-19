@@ -69,8 +69,8 @@ class Application(models.Model):
                                name='course')
 
     class Meta:
-        verbose_name = 'Запись на курс'
-        verbose_name_plural = 'Записи на курсы'
+        verbose_name = 'Заяка на курс'
+        verbose_name_plural = 'Заявки на курсы'
 
     def __str__(self):
         return "{} -> {}".format(self.user, self.course)
@@ -88,7 +88,9 @@ class Message(models.Model):
         verbose_name_plural = 'Сообщения'
 
     def __str__(self):
-        return "{}...".format(self.text[:20])
+        if len(self.text) <= 20:
+            return "(ID={}) {}".format(self.id, self.text)
+        return "(ID={}) {}...".format(self.id, self.text[:20])
 
 
 class ScheduledMessage(models.Model):

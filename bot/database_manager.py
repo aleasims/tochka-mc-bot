@@ -1,12 +1,15 @@
 from asgiref.sync import sync_to_async
 
-from panel.models import (Course, Recording, User, TGAdmin)
+from panel.models import (Course, Application, User,
+                          TGAdmin, Message, ScheduledMessage)
 
 from typing import List, Optional
 
 
 class DatabaseManager:
     """Link to Django ORM."""
+
+    # exhausting query sets for small tables works fine
 
     @sync_to_async
     def get_all_admins(self) -> List[TGAdmin]:
@@ -36,14 +39,25 @@ class DatabaseManager:
 
     @sync_to_async
     def get_all_cousres(self) -> List[Course]:
-        # exhausting this query set for small tables works fine
         return list(Course.objects.all())
 
     @sync_to_async
-    def add_recording(self, user: User, course: Course):
-        recording = Recording(user=user, course=course)
-        recording.save()
+    def add_application(self, user: User, course: Course):
+        application = Application(user=user, course=course)
+        application.save()
 
     @sync_to_async
-    def delete_recording(self, user: User, course: Course):
-        Recording.objects.filter(user=user, course=course).delete()
+    def delete_application(self, user: User, course: Course):
+        Application.objects.filter(user=user, course=course).delete()
+
+    @sync_to_async
+    def get_all_messages(self) -> List[ScheduledMessage]:
+        return list(Message.objects.all())
+
+    @sync_to_async
+    def get_all_scheduled_messages(self) -> List[ScheduledMessage]:
+        return list(ScheduledMessage.objects.all())
+
+    @sync_to_async
+    def get_recipients(self, message: Message) -> List[ScheduledMessage]:
+        return list(sc.recipient for sc in ScheduledMessage.objects.filter(message=message))

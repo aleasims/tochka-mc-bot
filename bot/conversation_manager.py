@@ -5,6 +5,7 @@ from typing import Optional
 from telegram import Update
 from telegram.ext import CallbackContext, ConversationHandler
 
+from .admin_convertation_manager import AdminConversationManager
 from .database_manager import DatabaseManager
 
 
@@ -25,6 +26,7 @@ class ConversationManager:
 
     def __init__(self, db: DatabaseManager):
         self.db = db
+        self.admin = AdminConversationManager(self)
 
     async def start(self, update: Update, context: CallbackContext):
         tg_id = update.message.from_user.id
@@ -44,40 +46,16 @@ class ConversationManager:
         logging.info(f"Stopped conversation - TG_ID={tg_id}")
 
         await update.message.reply_text(
-            "Пока! (Чтобы получать оповещения, "
-            "нужно будет снова использовать /start)"
+            "Вы отключились от бота!\n\nЧтобы в дальнейшем получать оповещения,"
+            " нужно будет снова использовать /start)"
         )
         return ConversationHandler.END
-
-    async def admin_on(self, update: Update, context: CallbackContext):
-        tg_id = update.message.from_user.id
-        logging.info(f"Admin authentication - TG_ID={tg_id}")
-
-        admins = await self.db.get_all_admins()
-        if tg_id in [admin.tg_id for admin in admins]:
-            logging.info(f"Admin mode ON - TG_ID={tg_id}")
-            await update.message.reply_text("Admin mode ON\n\n"
-                "Commands:\n"
-                "/registered - list all registered users\n"
-                "/stop - stop conversation")
-            return self.State.ADMIN
-
-        logging.info(f"Admin authentication failed - TG_ID={tg_id}")
-        await update.message.reply_text("Admin authentication failed")
-
-    async def registered(self, update: Update, context: CallbackContext):
-        users = await self.db.get_all_users()
-        response = '\n'.join(
-            f"{user.name} (TG_ID={user.tg_id})" for user in users
-        )
-        await update.message.reply_text(response or "No users registered.")
 
     async def register(self, update: Update, context: CallbackContext):
         tg_id = update.message.from_user.id
         name = update.message.text
         logging.info(f"Registering user - TG_ID={tg_id} NAME={name}")
 
-        await self.db.add_user(tg_id, name)
         await self.db.add_user(tg_id, name)
         user = await self.db.get_user(tg_id)
 
@@ -88,12 +66,12 @@ class ConversationManager:
     async def change_name(self, update: Update, context: CallbackContext):
         tg_id = update.message.from_user.id
         name = update.message.text
-        logging.info(f"Registering user - TG_ID={tg_id} NAME={name}")
+        logging.info(f"Changing name for user - TG_ID={tg_id} NAME={name}")
 
         await self.db.add_user(tg_id, name)
         user = await self.db.get_user(tg_id)
 
-        await update.message.reply_text(f"Привет, {user.name}")
+        await update.message.reply_text(f"Имя изменено. Привет, {user.name}")
         # TODO: return main menu markup here
         return self.State.MAIN_MENU
 

@@ -33,17 +33,19 @@ def build_app() -> Application:
         name="convhandler",
         entry_points=[
             CommandHandler("start", conv.start),
-            CommandHandler("admin", conv.admin_on),
+            # CommandHandler("admin", conv.admin.on),
         ],
         allow_reentry=False,
         states= {
             ConversationManager.State.ADMIN: [
-                CommandHandler("registered", conv.registered),
+                CommandHandler("registered", conv.admin.registered),
+                CommandHandler("messages", conv.admin.messages),
+                CommandHandler("scheduled", conv.admin.scheduled),
+                CommandHandler("sendall", conv.admin.send_all),
             ],
             ConversationManager.State.REGISTRATION: [
                 MessageHandler(filters.TEXT & (~ filters.COMMAND),
                                conv.register),
-                CommandHandler("admin", conv.admin_on),
             ],
             ConversationManager.State.MAIN_MENU: [],
         },
@@ -51,7 +53,7 @@ def build_app() -> Application:
         persistent=True,
         fallbacks=[
             CommandHandler("stop", conv.stop),
-            CommandHandler("admin", conv.admin_on),
+            CommandHandler("admin", conv.admin.on),
         ],
     ))
 
