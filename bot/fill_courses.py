@@ -12,12 +12,12 @@ from panel.models import Course
 
 
 def fill_courses():
-    table = pd.read_csv('bot/text_data/cources/cources.csv', dtype=str)
+    table = pd.read_csv('bot/static/cources/cources.csv', dtype=str)
 
     for i in range(table.shape[0]):
         name = table.loc[i, 'txt_short']
-        with open('bot/text_data/cources/' + table.loc[i, 'txt_long'], 'r') as f:
-            description = ''.join(f.readlines())
+        with open('bot/static/cources/' + table.loc[i, 'txt_long'], 'r') as f:
+            description = f.read()
         who = table.loc[i, 'who']
         where = table.loc[i, 'where']
         day = table.loc[i, 'when']
