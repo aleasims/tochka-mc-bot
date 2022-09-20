@@ -1,22 +1,35 @@
+from distutils import extension
 import logging
 from collections import namedtuple
 from pathlib import Path
 
-StaticData = namedtuple("StaticData",
-                        ["images", "texts"])
+TYPES = ["images", "texts"]
+
+EXTENSIONS = {
+    "images": ["jpg", "jpeg", "png"],
+    "texts": ["txt"],
+}
+
+MODES = {
+    "images": "rb",
+    "texts": "r",
+}
+
+StaticData = namedtuple("StaticData", TYPES)
 
 
 def collect_static(prefix: str) -> StaticData:
     logging.info(f"Collecting static from `{prefix}`")
-    texts = {}
-    for path in Path(prefix).rglob("*.txt"):
-        with open(path) as f:
-            texts[path.name] = f.read()
 
-    images = {}
-    for path in Path(prefix).rglob("*.jpg"):
-        with open(path, "rb") as f:
-            images[path.name] = f.read()
+    data = {}
 
-    logging.info(f"Collected {len(texts)} texts, {len(images)} images")
-    return StaticData(texts=texts, images=images)
+    for type_ in TYPES:
+        data[type_] = {}
+        for ext in EXTENSIONS[type_]:
+            for path in Path(prefix).rglob(f"*.{ext}"):
+                with open(path, MODES[type_]) as f:
+                    data[type_][path.name] = f.read()
+
+    n = sum(len(values) for values in data.values())
+    logging.info(f"Collected {n} items")
+    return StaticData(**data)
