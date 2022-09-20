@@ -2,5 +2,6 @@ django
 djangorestframework
 pandas
 gunicorn
+psycopg2-binary
 --pre
 python-telegram-bot
