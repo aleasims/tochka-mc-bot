@@ -21,7 +21,7 @@ if TOKEN is None:
                        "(environment variable `TG_TOKEN` must be set)")
 
 CONVERSATION_DUMP = "conversation.pickle"
-STATIC_PREFIX = "bot/text_data"
+STATIC_PREFIX = "bot/static"
 
 
 def build_app() -> Application:
