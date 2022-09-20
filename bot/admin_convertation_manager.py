@@ -4,6 +4,8 @@ import logging
 from telegram import Update
 from telegram.ext import ContextTypes
 
+from panel.models import Message, User
+
 from .database_manager import DatabaseManager
 
 class AdminConversationManager:
@@ -12,9 +14,9 @@ class AdminConversationManager:
     COMMANDS_DESC = '\n'.join([
         "/registered - list all registered users",
         "/messages - list all created messages",
-        "/scheduled - list all sceduled messages",
-        "/stop - stop conversation",
+        "/scheduled - list all scheduled messages",
         "/sendall - send all scheduled messages",
+        "/stop - stop conversation",
     ])
 
     def __init__(self, base):
@@ -84,6 +86,6 @@ class AdminConversationManager:
 
         msgs = await self.db.get_all_scheduled_messages()
         for scheduled in msgs:
-            print(scheduled)
-            # await context.bot.send_message(scheduled.recipient.tg_id,
-            #                                scheduled.message.text)
+            message = await self.db.get_message(scheduled.message_id)
+            await context.bot.send_message(scheduled.recipient_id, message.text)
+            await self.db.delete_scheduled_message(scheduled.id)

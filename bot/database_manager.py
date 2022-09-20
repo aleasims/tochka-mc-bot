@@ -34,12 +34,42 @@ class DatabaseManager:
         user.save()
 
     @sync_to_async
+    def update_user(self, tg_id: int, **kwargs):
+        """This function can update User info.
+        Accepts possible keyword args: `name`, `surname`, `group_id`
+        """
+
+        try:
+            user = User.objects.get(tg_id=tg_id)
+        except User.DoesNotExist:
+            return
+
+        name = kwargs.get('name')
+        surname = kwargs.get('surname')
+        group_id = kwargs.get('group_id')
+        if name is not None:
+            user.name = name
+        if surname is not None:
+            user.surname = surname
+        if group_id is not None:
+            user.group_id = group_id
+        user.save()
+
+    @sync_to_async
     def delete_user(self, tg_id: int):
         User.objects.filter(tg_id=tg_id).delete()
 
     @sync_to_async
     def get_all_cousres(self) -> List[Course]:
         return list(Course.objects.all())
+
+    @sync_to_async
+    def get_course(self, course_id: int) -> Optional[Course]:
+        try:
+            course = Course.objects.get(id=course_id)
+            return course
+        except Course.DoesNotExist:
+            return None
 
     @sync_to_async
     def add_application(self, user: User, course: Course):
@@ -51,8 +81,16 @@ class DatabaseManager:
         Application.objects.filter(user=user, course=course).delete()
 
     @sync_to_async
-    def get_all_messages(self) -> List[ScheduledMessage]:
+    def get_all_messages(self) -> List[Message]:
         return list(Message.objects.all())
+
+    @sync_to_async
+    def get_message(self, id_: int) -> Optional[Message]:
+        try:
+            message = Message.objects.get(id=id_)
+            return message
+        except Message.DoesNotExist:
+            return None
 
     @sync_to_async
     def get_all_scheduled_messages(self) -> List[ScheduledMessage]:
@@ -61,3 +99,7 @@ class DatabaseManager:
     @sync_to_async
     def get_recipients(self, message: Message) -> List[ScheduledMessage]:
         return list(sc.recipient for sc in ScheduledMessage.objects.filter(message=message))
+
+    @sync_to_async
+    def delete_scheduled_message(self, id_: int):
+        ScheduledMessage.objects.filter(id=id_).delete()
