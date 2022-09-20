@@ -1,33 +1,19 @@
 import argparse
 import logging
 import os
+from typing import Dict, Tuple
 
 # this setup must be done before importing django models
 import django
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "botback.settings.dev")
 django.setup()
 
-
-# UNCOMMENT TO CREATE NEW COURSES
-# from panel.models import Course
-# import pandas as pd
-# table = pd.read_csv('bot/text_data/cources/cources.csv', dtype=str)
-# for i in range(table.shape[0]):
-#     name = table.loc[i, 'txt_short']
-#     description = ''.join(open('bot/text_data/cources/' + table.loc[i, 'txt_long'], 'r').readlines())
-#     who = table.loc[i, 'who']
-#     where = table.loc[i, 'where']
-#     day = table.loc[i, 'when']
-#     time = table.loc[i, 'time']
-#     img_path = table.loc[i, 'image_path']
-#     order = i
-#     Course(name=name, description=description, who=who, where=where, day=day, time=time, img_path=img_path, order=order).save()
-
 from telegram.ext import (Application, CommandHandler, ConversationHandler,
                           MessageHandler, filters, PicklePersistence, CallbackQueryHandler)
 
 from bot.conversation_manager import ConversationManager
 from bot.database_manager import DatabaseManager
+from bot.static_data import collect_static
 
 TOKEN = os.environ.get("TG_TOKEN")
 if TOKEN is None:
@@ -35,6 +21,7 @@ if TOKEN is None:
                        "(environment variable `TG_TOKEN` must be set)")
 
 CONVERSATION_DUMP = "conversation.pickle"
+STATIC_PREFIX = "bot/text_data"
 
 
 def build_app() -> Application:
@@ -42,14 +29,14 @@ def build_app() -> Application:
     app = Application.builder().concurrent_updates(False)\
         .persistence(persistence).token(TOKEN).build()
 
+    static = collect_static(STATIC_PREFIX)
     db_manager = DatabaseManager()
-    conv = ConversationManager(db_manager)
+    conv = ConversationManager(db_manager, static)
 
     app.add_handler(ConversationHandler(
         name="convhandler",
         entry_points=[
             CommandHandler("start", conv.start),
-            # CommandHandler("admin", conv.admin.on),
         ],
         allow_reentry=False,
         states= {
