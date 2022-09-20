@@ -166,3 +166,6 @@ cython_debug/
 
 # Django static files
 static/
+
+# This must be stored in private
+config.json
