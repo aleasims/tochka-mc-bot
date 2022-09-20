@@ -8,21 +8,20 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "botback.settings.dev")
 django.setup()
 
 
-from panel.models import Course
-import pandas as pd
-
-table = pd.read_csv('bot/text_data/cources/cources.csv', dtype=str)
-
-for i in range(table.shape[0]):
-    name = table.loc[i, 'name']
-    description = ''.join(open('bot/text_data/cources/' + table.loc[i, 'txt_long'], 'r').readlines())
-    who = table.loc[i, 'who']
-    where = table.loc[i, 'where']
-    day = table.loc[i, 'when']
-    time = table.loc[i, 'time']
-    order = i
-
-    Course(name=name, description=description, who=who, where=where, day=day, when=time, order=order).save()
+# UNCOMMENT TO CREATE NEW COURSES
+# from panel.models import Course
+# import pandas as pd
+# table = pd.read_csv('bot/text_data/cources/cources.csv', dtype=str)
+# for i in range(table.shape[0]):
+#     name = table.loc[i, 'txt_short']
+#     description = ''.join(open('bot/text_data/cources/' + table.loc[i, 'txt_long'], 'r').readlines())
+#     who = table.loc[i, 'who']
+#     where = table.loc[i, 'where']
+#     day = table.loc[i, 'when']
+#     time = table.loc[i, 'time']
+#     img_path = table.loc[i, 'image_path']
+#     order = i
+#     Course(name=name, description=description, who=who, where=where, day=day, time=time, img_path=img_path, order=order).save()
 
 from telegram.ext import (Application, CommandHandler, ConversationHandler,
                           MessageHandler, filters, PicklePersistence, CallbackQueryHandler)
@@ -70,10 +69,11 @@ def build_app() -> Application:
                 MessageHandler(filters.TEXT & (~ filters.COMMAND), conv.register_groupid),
             ],
             ConversationManager.State.MAIN_MENU: [
-                # CallbackQueryHandler(conv.about, pattern='^about$'),
-                # CallbackQueryHandler(conv.join, pattern='^join$'),
-                # CallbackQueryHandler(conv.call, pattern='^call$'),
-                CallbackQueryHandler(conv.menu, pattern='^menu$')],
+                CallbackQueryHandler(conv.about, pattern='^about$'),
+                CallbackQueryHandler(conv.join, pattern='^join$'),
+                CallbackQueryHandler(conv.call, pattern='^call$'),
+                CallbackQueryHandler(conv.menu, pattern='^menu$'),
+                CallbackQueryHandler(conv.courses, pattern='^courses')],
         },
         conversation_timeout=None,
         persistent=True,

@@ -56,7 +56,7 @@ class ConversationManager:
         
         await update.message.reply_text(f"Привет, {user.name}")
         # # TODO: return main menu markup here
-        return await self.menu(update, context)  #self.State.MAIN_MENU    
+        return await self.menu_no_getting(update, context)  #self.State.MAIN_MENU    
 
     async def stop(self, update: Update, context: CallbackContext):
         tg_id = update.message.from_user.id
@@ -139,11 +139,11 @@ class ConversationManager:
         await update.message.reply_text(f''.join(open('bot/text_data/start_intro_to_menu.txt', 'r').readlines()), reply_markup=reply_markup)
         return self.State.MAIN_MENU
 
-    async def menu(self, update: Update, _: ContextTypes.DEFAULT_TYPE) -> Union[int, None]:
+    async def menu_no_getting(self, update: Update, _: ContextTypes.DEFAULT_TYPE) -> Union[int, None]:
         menu = [
             [
                 InlineKeyboardButton("Что такое Мастерская?", callback_data='about'),
-                InlineKeyboardButton("Расписание", callback_data='timetable'),
+                # InlineKeyboardButton("Расписание", callback_data='timetable'),
                 InlineKeyboardButton("Записаться на курсы", callback_data='join')
                 ],
             [
@@ -156,11 +156,33 @@ class ConversationManager:
         await update.message.reply_text(text=reply, reply_markup=reply_markup)
         return self.State.MAIN_MENU
 
+    async def menu(self, update: Update, _: ContextTypes.DEFAULT_TYPE) -> Union[int, None]:
+        query = update.callback_query
+        
+        await query.answer()
+        menu = [
+            [
+                InlineKeyboardButton("Что такое Мастерская?", callback_data='about'),
+                # InlineKeyboardButton("Расписание", callback_data='timetable'),
+                InlineKeyboardButton("Записаться на курсы", callback_data='join')
+                ],
+            [
+                InlineKeyboardButton("Выбранные курсы", callback_data='check'),
+                InlineKeyboardButton("Связаться с организатором", callback_data='call')
+                ]
+        ]
+        reply_markup = InlineKeyboardMarkup(menu)
+        reply = f"Читай про курсы и записывайся на занятия!"
+        await query.edit_message_text(
+            text=reply, reply_markup=reply_markup
+        ) 
+        return self.State.MAIN_MENU
+
     async def about(self, update: Update, _: ContextTypes.DEFAULT_TYPE) -> Union[int, None]:
         query = update.callback_query
         
         await query.answer()
-        reply = ''.join(open('src/text_data/menu_description.txt', 'r').readlines())
+        reply = ''.join(open('bot/text_data/menu_description.txt', 'r').readlines())
         
         keyboard = [
             [InlineKeyboardButton("Записаться на курс", callback_data='join')],
@@ -168,6 +190,74 @@ class ConversationManager:
         ]
 
         reply_markup = InlineKeyboardMarkup(keyboard)
-        reply = f"Читай про курсы и записывайся на занятия!"
-        await update.message.reply_text(text=reply, reply_markup=reply_markup)
+        await query.edit_message_text(
+            text=reply, reply_markup=reply_markup
+        ) 
+        return self.State.MAIN_MENU
+    
+    async def call(self, update: Update, _: ContextTypes.DEFAULT_TYPE) -> Union[int, None]:
+        query = update.callback_query
+        
+        await query.answer()
+        reply = ''.join(open('bot/text_data/menu_call.txt', 'r').readlines())
+        
+        keyboard = [
+            [InlineKeyboardButton("Вернуться в меню", callback_data='menu')],
+        ]
+
+        reply_markup = InlineKeyboardMarkup(keyboard)
+        await query.edit_message_text(
+            text=reply, reply_markup=reply_markup
+        ) 
+        return self.State.MAIN_MENU
+
+    async def join(self, update: Update, _: ContextTypes.DEFAULT_TYPE) -> Union[int, None]:
+        query = update.callback_query
+        await query.answer()
+        reply = ''.join(open('bot/text_data/menu_join.txt', 'r').readlines())
+        
+        keyboard = []
+        
+        courses = sorted(await self.db.get_all_cousres(), key=lambda elem: elem.order)        
+        for course in courses:
+
+            name = course.name
+            when = course.day
+            time = course.time
+
+            text = f'{name}\t\t{when}\t{time}'
+            
+            button = InlineKeyboardButton(text, callback_data='courses '+str(course.order))
+            keyboard.append([button])
+        keyboard.append([InlineKeyboardButton("Вернуться в меню", callback_data='menu')])
+
+        reply_markup = InlineKeyboardMarkup(keyboard, one_time_keyboard=True)
+        await query.edit_message_text(
+            text=reply, reply_markup=reply_markup
+        ) 
+
+        return self.State.MAIN_MENU
+
+    async def courses(self, update: Update, _: ContextTypes.DEFAULT_TYPE) -> Union[int, None]:
+        
+        query = update.callback_query
+        print(query.data)
+        order = int(query.data[8:])
+        await query.answer()
+
+        course = sorted(await self.db.get_all_cousres(), key=lambda elem: elem.order)[order]
+        
+        keyboard = [
+            [InlineKeyboardButton("Записаться на этот курс", callback_data='register_question')],
+            [InlineKeyboardButton("Хочу на актёрку, но не могу в это время", callback_data='menu')],
+            [InlineKeyboardButton("Назад в меню", callback_data='menu')]
+        ]
+
+        reply_markup = InlineKeyboardMarkup(keyboard, one_time_keyboard=True)
+        reply = f"Описание {order}"
+
+        photo_path = 'bot/text_data/cources/photo/' + course.img_path
+        print(photo_path)
+        
+        await query.message.reply_photo(photo=open(photo_path, 'rb'), caption=reply, reply_markup=reply_markup) 
         return self.State.MAIN_MENU

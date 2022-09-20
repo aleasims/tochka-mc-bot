@@ -63,12 +63,15 @@ class Course(models.Model):
                             name='day',
                             max_length=200)
     time = models.CharField(verbose_name='Время',
-                            name='when',
+                            name='time',
                             max_length=200)
+    img_path = models.CharField(verbose_name='Картинка',
+                            name='img_path',
+                            max_length=200, blank=True)
     order = models.IntegerField(verbose_name='Порядковый номер',
                                 name='order',
                                 default=1)
-                                
+
     class Meta:
         verbose_name = 'Курс'
         verbose_name_plural = 'Курсы'
