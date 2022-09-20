@@ -215,6 +215,12 @@ class MenuManager:
         query = update.callback_query
         tg_id = query.from_user.id
         applications = [apl.course_id for apl in await self.db.get_applications(tg_id)]
+
+        if len(applications) == 0:
+            caption = "Вы пока не записались ни на один курс."
+        else:
+            caption = None
+
         courses = [await self.db.get_course(course_id) for course_id in applications]
 
         keyboard = []
@@ -234,6 +240,7 @@ class MenuManager:
         await update.callback_query.delete_message()
         await update.callback_query.message.reply_photo(
             self.static.images["Фиолетовая_мастерская.jpeg"],
+            caption=caption,
             reply_markup=reply_markup
         )
         return self.State.MENU_MYCOURSES
