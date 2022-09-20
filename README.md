@@ -8,9 +8,10 @@ Tochka masterclass bot
 pip install -r requirements.txt
 ```
 
-## Before start
+## Production run
 
 ```bash
 export PYTHONPATH=.
-export TG_TOKEN=123456:ABCD...
+export DJANGO_SETTINGS_MODULE=botback.settings.prod
+python manage.py migrate
 ```
