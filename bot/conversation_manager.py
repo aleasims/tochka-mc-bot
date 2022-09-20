@@ -28,9 +28,6 @@ class ConversationManager:
         ADMIN = auto()
         """Admin mode is ON. One can access admin commands now."""
 
-        REGISTRATION = auto()
-        """Enter user name/surname."""
-
         MAIN_MENU = auto()
         """Main menu panel."""
 
@@ -56,10 +53,10 @@ class ConversationManager:
             # await update.message.reply_text("Привет, введи свое имя и фамилию:")
             await update.message.reply_text(''.join(open('bot/text_data/start_hello_get_name.txt', 'r').readlines()))
             return self.State.REGISTER_NAME
-
+        
         await update.message.reply_text(f"Привет, {user.name}")
-        # TODO: return main menu markup here
-        return self.State.MAIN_MENU
+        # # TODO: return main menu markup here
+        return await self.menu(update, context)  #self.State.MAIN_MENU    
 
     async def stop(self, update: Update, context: CallbackContext):
         tg_id = update.message.from_user.id
@@ -103,37 +100,74 @@ class ConversationManager:
         user = await self.db.get_user(tg_id)
 
         await update.message.reply_text(f"Приятно познакомиться, {user.name} :) \n А какая у тебя фамилия?")
-        return self.State.MAIN_MENU
+        return self.State.REGISTER_SURNAME
 
     async def register_surname(self, update: Update, context: CallbackContext):
         tg_id = update.message.from_user.id
-        name = update.message.text
-        logging.info(f"Registering user - TG_ID={tg_id} NAME={name}")
+        surname = update.message.text
+        logging.info(f"Add user info - TG_ID={tg_id} SURNAME={surname}")
 
-        await self.db.add_user(tg_id, name)
-        user = await self.db.get_user(tg_id)
+        # ADD SURNAME
+        await self.db.update_user(tg_id, surname=surname)
 
-        await update.message.reply_text(f"Приятно познакомиться, {user.name} :) \n А какая у тебя фамилия?")
+        await update.message.reply_text(f''.join(open('bot/text_data/start_get_group_id.txt', 'r').readlines()))
+        return self.State.REGISTER_GROUPID
+
+    async def register_groupid(self, update: Update, context: CallbackContext):
+        tg_id = update.message.from_user.id
+        group_id = update.message.text
+        logging.info(f"Add user info - TG_ID={tg_id} GROUPID={group_id}")
+
+        # ADD GROUPID
+        await self.db.update_user(tg_id, group_id=group_id)
+
+        menu = [
+            [
+                InlineKeyboardButton("Что такое Мастерская?", callback_data='about')
+                ],
+            [
+                InlineKeyboardButton("Расписание", callback_data='timetable'),
+                InlineKeyboardButton("Записаться на курсы", callback_data='join')
+                ],
+            [
+                InlineKeyboardButton("Выбранные курсы", callback_data='check'),
+                InlineKeyboardButton("Связаться с организатором", callback_data='call')
+                ]
+        ]
+        reply_markup = InlineKeyboardMarkup(menu)
+        reply = f"Мы тебя зарегистрировали! Теперь ты можешь пользоваться нашим ботом :) \n Читай про курсы и записывайся на занятия!"
+        await update.message.reply_text(f''.join(open('bot/text_data/start_intro_to_menu.txt', 'r').readlines()), reply_markup=reply_markup)
         return self.State.MAIN_MENU
 
-    async def register_surname(self, update: Update, _: ContextTypes.DEFAULT_TYPE) -> Union[int, None]:
-        name = update.message.text
+    async def menu(self, update: Update, _: ContextTypes.DEFAULT_TYPE) -> Union[int, None]:
+        menu = [
+            [
+                InlineKeyboardButton("Что такое Мастерская?", callback_data='about'),
+                InlineKeyboardButton("Расписание", callback_data='timetable'),
+                InlineKeyboardButton("Записаться на курсы", callback_data='join')
+                ],
+            [
+                InlineKeyboardButton("Выбранные курсы", callback_data='check'),
+                InlineKeyboardButton("Связаться с организатором", callback_data='call')
+                ]
+        ]
+        reply_markup = InlineKeyboardMarkup(menu)
+        reply = f"Читай про курсы и записывайся на занятия!"
+        await update.message.reply_text(text=reply, reply_markup=reply_markup)
+        return self.State.MAIN_MENU
+
+    async def about(self, update: Update, _: ContextTypes.DEFAULT_TYPE) -> Union[int, None]:
+        query = update.callback_query
         
-        chat = update.message.chat_id
-        self.db_manager.add_user(chat, name)
+        await query.answer()
+        reply = ''.join(open('src/text_data/menu_description.txt', 'r').readlines())
+        
+        keyboard = [
+            [InlineKeyboardButton("Записаться на курс", callback_data='join')],
+            [InlineKeyboardButton("Вернуться в меню", callback_data='menu')],
+        ]
 
-        reply = f"{name}, " + ''.join(open('text_data/start_get_group_id.txt', 'r').readlines())
-        await update.message.reply_text(reply, parse_mode=ParseMode.MARKDOWN)
-        return self.State.REGISTER_GROUP_ID
-
-    async def register(self, update: Update, context: CallbackContext):
-        tg_id = update.message.from_user.id
-        name = update.message.text
-        logging.info(f"Registering user - TG_ID={tg_id} NAME={name}")
-
-        await self.db.add_user(tg_id, name)
-        user = await self.db.get_user(tg_id)
-
-        await update.message.reply_text(f"Привет, {user.name}")
-        # TODO: return main menu markup here
+        reply_markup = InlineKeyboardMarkup(keyboard)
+        reply = f"Читай про курсы и записывайся на занятия!"
+        await update.message.reply_text(text=reply, reply_markup=reply_markup)
         return self.State.MAIN_MENU

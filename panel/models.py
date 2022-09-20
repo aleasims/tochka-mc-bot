@@ -30,10 +30,12 @@ class User(models.Model):
                             max_length=100)
     surname = models.CharField(verbose_name='Фамилия',
                             name='surname',
-                            max_length=100)
+                            max_length=100,
+                            blank=True)
     group_id = models.CharField(verbose_name='Номер группы',
                             name='group_id',
-                            max_length=100)
+                            max_length=100,
+                            blank=True)
 
     class Meta:
         verbose_name = 'Участник'
@@ -66,7 +68,7 @@ class Course(models.Model):
     order = models.IntegerField(verbose_name='Порядковый номер',
                                 name='order',
                                 default=1)
-
+                                
     class Meta:
         verbose_name = 'Курс'
         verbose_name_plural = 'Курсы'

@@ -7,8 +7,25 @@ import django
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "botback.settings.dev")
 django.setup()
 
+
+from panel.models import Course
+import pandas as pd
+
+table = pd.read_csv('bot/text_data/cources/cources.csv', dtype=str)
+
+for i in range(table.shape[0]):
+    name = table.loc[i, 'name']
+    description = ''.join(open('bot/text_data/cources/' + table.loc[i, 'txt_long'], 'r').readlines())
+    who = table.loc[i, 'who']
+    where = table.loc[i, 'where']
+    day = table.loc[i, 'when']
+    time = table.loc[i, 'time']
+    order = i
+
+    Course(name=name, description=description, who=who, where=where, day=day, when=time, order=order).save()
+
 from telegram.ext import (Application, CommandHandler, ConversationHandler,
-                          MessageHandler, filters, PicklePersistence)
+                          MessageHandler, filters, PicklePersistence, CallbackQueryHandler)
 
 from bot.conversation_manager import ConversationManager
 from bot.database_manager import DatabaseManager
@@ -43,7 +60,6 @@ def build_app() -> Application:
                 CommandHandler("scheduled", conv.admin.scheduled),
                 CommandHandler("sendall", conv.admin.send_all),
             ],
-            ConversationManager.State.MAIN_MENU: [],
             ConversationManager.State.REGISTER_NAME: [
                 MessageHandler(filters.TEXT & (~ filters.COMMAND), conv.register_name),
             ],
@@ -53,6 +69,11 @@ def build_app() -> Application:
             ConversationManager.State.REGISTER_GROUPID: [
                 MessageHandler(filters.TEXT & (~ filters.COMMAND), conv.register_groupid),
             ],
+            ConversationManager.State.MAIN_MENU: [
+                # CallbackQueryHandler(conv.about, pattern='^about$'),
+                # CallbackQueryHandler(conv.join, pattern='^join$'),
+                # CallbackQueryHandler(conv.call, pattern='^call$'),
+                CallbackQueryHandler(conv.menu, pattern='^menu$')],
         },
         conversation_timeout=None,
         persistent=True,
