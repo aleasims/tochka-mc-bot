@@ -1,6 +1,12 @@
 """Run this to fill data base with courses info."""
 
+import os
 import pandas as pd
+
+# this setup must be done before importing django models
+import django
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "botback.settings.dev")
+django.setup()
 
 from panel.models import Course
 
