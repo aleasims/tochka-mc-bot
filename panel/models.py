@@ -42,7 +42,7 @@ class User(models.Model):
         verbose_name_plural = 'Участники'
 
     def __str__(self):
-        return "{} ({})".format(self.name, self.tg_id)
+        return "{} {} ({})".format(self.name, self.surname, self.tg_id)
 
 
 class Course(models.Model):

@@ -85,11 +85,18 @@ class ConversationManager:
             logging.exception(context.error)
 
         if update is not None:
-            tg_id = update.message.from_user.id
-            command = update.message.text
-            logging.info(f"Error occured - TG_ID={tg_id}, TEXT=`{command}`")
+            try:
+                tg_id = update.message.from_user.id
+                command = update.message.text
+                logging.info(f"Error occured - TG_ID={tg_id}, TEXT=`{command}`")
+                await update.message.reply_text("Произошла ошибка :(")
 
-        await update.message.reply_text("Произошла ошибка :(")
+            except:
+                q = update.callback_query
+                tg_id = q.from_user.id
+                logging.info(f"Error occured - TG_ID={tg_id}, TEXT=`{'do not know'}`")
+                await q.message.reply_text("Произошла ошибка :(")
+
 
     async def register_name(self, update: Update, context: CallbackContext):
         tg_id = update.message.from_user.id
@@ -173,7 +180,7 @@ class ConversationManager:
         ]
         reply_markup = InlineKeyboardMarkup(menu)
         reply = f"Читай про курсы и записывайся на занятия!"
-        await query.edit_message_text(
+        await query.message.reply_text(
             text=reply, reply_markup=reply_markup
         ) 
         return self.State.MAIN_MENU
@@ -211,7 +218,7 @@ class ConversationManager:
         ) 
         return self.State.MAIN_MENU
 
-    async def join(self, update: Update, _: ContextTypes.DEFAULT_TYPE) -> Union[int, None]:
+    async def join(self, update: Update, _context: ContextTypes.DEFAULT_TYPE) -> Union[int, None]:
         query = update.callback_query
         await query.answer()
         reply = ''.join(open('bot/text_data/menu_join.txt', 'r').readlines())
@@ -238,8 +245,7 @@ class ConversationManager:
 
         return self.State.MAIN_MENU
 
-    async def courses(self, update: Update, _: ContextTypes.DEFAULT_TYPE) -> Union[int, None]:
-        
+    async def courses(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> Union[int, None]:
         query = update.callback_query
         print(query.data)
         order = int(query.data[8:])
@@ -248,16 +254,84 @@ class ConversationManager:
         course = sorted(await self.db.get_all_cousres(), key=lambda elem: elem.order)[order]
         
         keyboard = [
-            [InlineKeyboardButton("Записаться на этот курс", callback_data='register_question')],
-            [InlineKeyboardButton("Хочу на актёрку, но не могу в это время", callback_data='menu')],
+            [InlineKeyboardButton("Записаться на этот курс", callback_data=f'select_{str(order)}')],
+            # [InlineKeyboardButton("Хочу на актёрку, но не могу в это время", callback_data='menu')],
             [InlineKeyboardButton("Назад в меню", callback_data='menu')]
         ]
 
         reply_markup = InlineKeyboardMarkup(keyboard, one_time_keyboard=True)
-        reply = f"Описание {order}"
+        # reply = f"Описание {order}"
+        reply = course.description
 
         photo_path = 'bot/text_data/cources/photo/' + course.img_path
         print(photo_path)
-        
-        await query.message.reply_photo(photo=open(photo_path, 'rb'), caption=reply, reply_markup=reply_markup) 
+
+        if len(reply) > 999:
+            await query.message.reply_photo(photo=open(photo_path, 'rb'), caption=reply[:999]) 
+            await query.message.reply_text(text=reply[999:], reply_markup=reply_markup) 
+        else:
+            await query.message.reply_photo(photo=open(photo_path, 'rb'), caption=reply, reply_markup=reply_markup) 
         return self.State.MAIN_MENU
+
+    async def select_this_cource(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> Union[int, None]:        
+        query = update.callback_query
+        order = int(query.data[7:])
+        await query.answer()
+
+        course = sorted(await self.db.get_all_cousres(), key=lambda elem: elem.order)[order]
+
+        reply_button = f"Нажми, чтобы записаться на курс `{course.name}`!"
+        
+        keyboard = [
+            [InlineKeyboardButton(reply_button, callback_data=f'final_select_{str(order)}')],
+            [InlineKeyboardButton("Назад в меню", callback_data='menu')]
+        ]
+
+        reply_markup = InlineKeyboardMarkup(keyboard, one_time_keyboard=True)
+
+        await query.message.reply_text(text='\nРегистрация на курс\n', reply_markup=reply_markup
+        ) 
+        return self.State.MAIN_MENU
+
+    async def final_select(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> Union[int, None]:        
+        query = update.callback_query
+        tg_id = query.from_user.id
+        order = int(query.data[13:])
+        await query.answer()
+
+        course = sorted(await self.db.get_all_cousres(), key=lambda elem: elem.order)[order]
+
+        # REGISTER USER ON COURSE
+        user = await self.db.get_user(tg_id)
+        await self.db.add_application(user, course)
+
+        reply = f"Мы записали твою заявку на курс `{course.name}`!"
+        
+        keyboard = [
+            [InlineKeyboardButton("Назад в меню", callback_data='menu')]
+        ]
+
+        reply_markup = InlineKeyboardMarkup(keyboard, one_time_keyboard=True)
+
+        await query.message.reply_text(text=reply, reply_markup=reply_markup
+        ) 
+        return self.State.MAIN_MENU
+
+    # async def check(self, update: Update, _context: ContextTypes.DEFAULT_TYPE) -> Union[int, None]:
+    #     query = update.callback_query
+    #     await query.answer()
+    #     # reply = ''.join(open('bot/text_data/menu_join.txt', 'r').readlines())
+    #     reply = 'Список курсов, на которые ты отправил заявки.'
+
+    #     keyboard = []
+        
+    #     courses = sorted(await self.db.get_all_cousres(), key=lambda elem: elem.order)        
+
+    #     keyboard.append([InlineKeyboardButton("Вернуться в меню", callback_data='menu')])
+
+    #     reply_markup = InlineKeyboardMarkup(keyboard, one_time_keyboard=True)
+    #     await query.edit_message_text(
+    #         text=reply, reply_markup=reply_markup
+    #     ) 
+
+    #     return self.State.MAIN_MENU
