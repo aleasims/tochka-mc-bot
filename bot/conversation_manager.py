@@ -1,12 +1,13 @@
 import logging
 from enum import Enum, auto
-from typing import Optional
+from typing import Dict, Optional
 
 from telegram import Update
 from telegram.ext import CallbackContext, ConversationHandler
 
 from .admin_convertation_manager import AdminConversationManager
 from .database_manager import DatabaseManager
+from .static_data import StaticData
 
 import logging
 from enum import Enum, auto
@@ -40,8 +41,9 @@ class ConversationManager:
         REGISTER_GROUPID = auto()
         """Enter user phystech group id."""
 
-    def __init__(self, db: DatabaseManager):
+    def __init__(self, db: DatabaseManager, static: StaticData):
         self.db = db
+        self.static = static
         self.admin = AdminConversationManager(self)
 
     async def start(self, update: Update, context: CallbackContext):
@@ -50,35 +52,18 @@ class ConversationManager:
 
         user = await self.db.get_user(tg_id)
         if user is None:
-            # await update.message.reply_text("Привет, введи свое имя и фамилию:")
-            await update.message.reply_text(''.join(open('bot/text_data/start_hello_get_name.txt', 'r').readlines()))
+            await update.message.reply_text(self.static.texts["start_hello_get_name.txt"])
             return self.State.REGISTER_NAME
-        
+
         await update.message.reply_text(f"Привет, {user.name}")
-        # # TODO: return main menu markup here
-        return await self.menu_no_getting(update, context)  #self.State.MAIN_MENU    
+        return await self.menu_no_getting(update, context)  #self.State.MAIN_MENU
 
     async def stop(self, update: Update, context: CallbackContext):
         tg_id = update.message.from_user.id
         logging.info(f"Stopped conversation - TG_ID={tg_id}")
 
-        await update.message.reply_text(
-            "Вы отключились от бота!\n\nЧтобы в дальнейшем получать оповещения,"
-            " нужно будет снова использовать /start)"
-        )
+        await update.message.reply_text(self.static.texts["stop.txt"])
         return ConversationHandler.END
-
-    async def change_name(self, update: Update, context: CallbackContext):
-        tg_id = update.message.from_user.id
-        name = update.message.text
-        logging.info(f"Changing name for user - TG_ID={tg_id} NAME={name}")
-
-        await self.db.add_user(tg_id, name)
-        user = await self.db.get_user(tg_id)
-
-        await update.message.reply_text(f"Имя изменено. Привет, {user.name}")
-        # TODO: return main menu markup here
-        return self.State.MAIN_MENU
 
     async def error(self, update: Optional[Update], context: CallbackContext):
         if context.error is not None:
@@ -110,7 +95,7 @@ class ConversationManager:
         # ADD SURNAME
         await self.db.update_user(tg_id, surname=surname)
 
-        await update.message.reply_text(f''.join(open('bot/text_data/start_get_group_id.txt', 'r').readlines()))
+        await update.message.reply_text(self.static.texts["start_get_group_id.txt"])
         return self.State.REGISTER_GROUPID
 
     async def register_groupid(self, update: Update, context: CallbackContext):
@@ -124,101 +109,92 @@ class ConversationManager:
         menu = [
             [
                 InlineKeyboardButton("Что такое Мастерская?", callback_data='about')
-                ],
+            ],
             [
                 InlineKeyboardButton("Расписание", callback_data='timetable'),
                 InlineKeyboardButton("Записаться на курсы", callback_data='join')
-                ],
+            ],
             [
                 InlineKeyboardButton("Выбранные курсы", callback_data='check'),
                 InlineKeyboardButton("Связаться с организатором", callback_data='call')
-                ]
+            ],
         ]
         reply_markup = InlineKeyboardMarkup(menu)
-        reply = f"Мы тебя зарегистрировали! Теперь ты можешь пользоваться нашим ботом :) \n Читай про курсы и записывайся на занятия!"
-        await update.message.reply_text(f''.join(open('bot/text_data/start_intro_to_menu.txt', 'r').readlines()), reply_markup=reply_markup)
+        await update.message.reply_text(text=self.static.texts["start_intro_to_menu.txt"],
+                                        reply_markup=reply_markup)
         return self.State.MAIN_MENU
 
-    async def menu_no_getting(self, update: Update, _: ContextTypes.DEFAULT_TYPE) -> Union[int, None]:
+    async def menu_no_getting(self, update: Update, _: ContextTypes.DEFAULT_TYPE) -> State:
         menu = [
             [
                 InlineKeyboardButton("Что такое Мастерская?", callback_data='about'),
-                # InlineKeyboardButton("Расписание", callback_data='timetable'),
                 InlineKeyboardButton("Записаться на курсы", callback_data='join')
-                ],
+            ],
             [
                 InlineKeyboardButton("Выбранные курсы", callback_data='check'),
                 InlineKeyboardButton("Связаться с организатором", callback_data='call')
-                ]
+            ],
         ]
         reply_markup = InlineKeyboardMarkup(menu)
         reply = f"Читай про курсы и записывайся на занятия!"
-        await update.message.reply_text(text=reply, reply_markup=reply_markup)
+        await update.message.reply_text(reply, reply_markup=reply_markup)
         return self.State.MAIN_MENU
 
-    async def menu(self, update: Update, _: ContextTypes.DEFAULT_TYPE) -> Union[int, None]:
+    async def menu(self, update: Update, _: ContextTypes.DEFAULT_TYPE) -> State:
         query = update.callback_query
-        
+
         await query.answer()
         menu = [
             [
                 InlineKeyboardButton("Что такое Мастерская?", callback_data='about'),
-                # InlineKeyboardButton("Расписание", callback_data='timetable'),
                 InlineKeyboardButton("Записаться на курсы", callback_data='join')
-                ],
+            ],
             [
                 InlineKeyboardButton("Выбранные курсы", callback_data='check'),
                 InlineKeyboardButton("Связаться с организатором", callback_data='call')
-                ]
+            ],
         ]
         reply_markup = InlineKeyboardMarkup(menu)
         reply = f"Читай про курсы и записывайся на занятия!"
-        await query.edit_message_text(
-            text=reply, reply_markup=reply_markup
-        ) 
+        await query.edit_message_text(text=reply, reply_markup=reply_markup)
         return self.State.MAIN_MENU
 
-    async def about(self, update: Update, _: ContextTypes.DEFAULT_TYPE) -> Union[int, None]:
+    async def about(self, update: Update, _: ContextTypes.DEFAULT_TYPE) -> State:
         query = update.callback_query
-        
+
         await query.answer()
-        reply = ''.join(open('bot/text_data/menu_description.txt', 'r').readlines())
-        
+
         keyboard = [
             [InlineKeyboardButton("Записаться на курс", callback_data='join')],
             [InlineKeyboardButton("Вернуться в меню", callback_data='menu')],
         ]
 
         reply_markup = InlineKeyboardMarkup(keyboard)
-        await query.edit_message_text(
-            text=reply, reply_markup=reply_markup
-        ) 
+        await query.edit_message_text(text=self.static.texts["menu_description.txt"],
+                                      reply_markup=reply_markup)
         return self.State.MAIN_MENU
-    
-    async def call(self, update: Update, _: ContextTypes.DEFAULT_TYPE) -> Union[int, None]:
+
+    async def call(self, update: Update, _: ContextTypes.DEFAULT_TYPE) -> State:
         query = update.callback_query
-        
+
         await query.answer()
-        reply = ''.join(open('bot/text_data/menu_call.txt', 'r').readlines())
-        
+
         keyboard = [
             [InlineKeyboardButton("Вернуться в меню", callback_data='menu')],
         ]
 
         reply_markup = InlineKeyboardMarkup(keyboard)
-        await query.edit_message_text(
-            text=reply, reply_markup=reply_markup
-        ) 
+        await query.edit_message_text(text=self.static.texts["menu_call.txt"],
+                                      reply_markup=reply_markup)
         return self.State.MAIN_MENU
 
-    async def join(self, update: Update, _: ContextTypes.DEFAULT_TYPE) -> Union[int, None]:
+    async def join(self, update: Update, _: ContextTypes.DEFAULT_TYPE) -> State:
         query = update.callback_query
         await query.answer()
-        reply = ''.join(open('bot/text_data/menu_join.txt', 'r').readlines())
-        
+
         keyboard = []
-        
-        courses = sorted(await self.db.get_all_cousres(), key=lambda elem: elem.order)        
+
+        courses = sorted(await self.db.get_all_cousres(), key=lambda elem: elem.order)
         for course in courses:
 
             name = course.name
@@ -226,27 +202,24 @@ class ConversationManager:
             time = course.time
 
             text = f'{name}\t\t{when}\t{time}'
-            
-            button = InlineKeyboardButton(text, callback_data='courses '+str(course.order))
+
+            button = InlineKeyboardButton(text, callback_data='courses '+ str(course.id))
             keyboard.append([button])
         keyboard.append([InlineKeyboardButton("Вернуться в меню", callback_data='menu')])
 
         reply_markup = InlineKeyboardMarkup(keyboard, one_time_keyboard=True)
-        await query.edit_message_text(
-            text=reply, reply_markup=reply_markup
-        ) 
+        await query.edit_message_text(text=self.static.texts["menu_join.txt"],
+                                      reply_markup=reply_markup)
 
         return self.State.MAIN_MENU
 
-    async def courses(self, update: Update, _: ContextTypes.DEFAULT_TYPE) -> Union[int, None]:
-        
+    async def courses(self, update: Update, _: ContextTypes.DEFAULT_TYPE) -> State:
         query = update.callback_query
-        print(query.data)
-        order = int(query.data[8:])
+        course_id = int(query.data[8:])
         await query.answer()
 
-        course = sorted(await self.db.get_all_cousres(), key=lambda elem: elem.order)[order]
-        
+        course = await self.db.get_course(course_id)
+
         keyboard = [
             [InlineKeyboardButton("Записаться на этот курс", callback_data='register_question')],
             [InlineKeyboardButton("Хочу на актёрку, но не могу в это время", callback_data='menu')],
@@ -254,10 +227,9 @@ class ConversationManager:
         ]
 
         reply_markup = InlineKeyboardMarkup(keyboard, one_time_keyboard=True)
-        reply = f"Описание {order}"
+        reply = course.description
 
-        photo_path = 'bot/text_data/cources/photo/' + course.img_path
-        print(photo_path)
-        
-        await query.message.reply_photo(photo=open(photo_path, 'rb'), caption=reply, reply_markup=reply_markup) 
+        await query.message.reply_photo(photo=self.static.images[course.img_path],
+                                        caption=reply,
+                                        reply_markup=reply_markup)
         return self.State.MAIN_MENU
