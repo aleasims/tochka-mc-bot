@@ -12,6 +12,7 @@ from telegram.ext import (Application, CommandHandler, ConversationHandler,
                           MessageHandler, filters, PicklePersistence, CallbackQueryHandler)
 
 from bot.conversation_manager import ConversationManager
+from bot.menu_manager import CallbackData
 from bot.database_manager import DatabaseManager
 from bot.static_data import collect_static
 
@@ -39,7 +40,7 @@ def build_app() -> Application:
             CommandHandler("start", conv.start),
         ],
         allow_reentry=False,
-        states= {
+        states={
             ConversationManager.State.ADMIN: [
                 CommandHandler("registered", conv.admin.registered),
                 CommandHandler("messages", conv.admin.messages),
@@ -55,17 +56,32 @@ def build_app() -> Application:
             ConversationManager.State.REGISTER_GROUPID: [
                 MessageHandler(filters.TEXT & (~ filters.COMMAND), conv.register_groupid),
             ],
-            ConversationManager.State.MAIN_MENU: [
-                CallbackQueryHandler(conv.about, pattern='^about$'),
-                CallbackQueryHandler(conv.join, pattern='^join$'),
-                CallbackQueryHandler(conv.call, pattern='^call$'),
-                CallbackQueryHandler(conv.menu, pattern='^menu$'),
-                CallbackQueryHandler(conv.menu_no_getting, pattern='^menu_no_getting$'),
-                CallbackQueryHandler(conv.courses, pattern='^courses'),
-                CallbackQueryHandler(conv.select_this_cource, pattern='^select'),
-                CallbackQueryHandler(conv.final_select, pattern='^final_select')
-                # CallbackQueryHandler(conv.check, pattern='^check$'),
-                ]
+            ConversationManager.State.MENU_MAIN: [
+                CallbackQueryHandler(conv.menu.about, pattern=f"^{CallbackData.about}$"),
+                CallbackQueryHandler(conv.menu.apply, pattern=f"^{CallbackData.apply}$"),
+                CallbackQueryHandler(conv.menu.contacts, pattern=f"^{CallbackData.contacts}$"),
+                CallbackQueryHandler(conv.menu.mycourses, pattern=f"^{CallbackData.mycourses}$"),
+            ],
+            ConversationManager.State.MENU_ABOUT: [
+                CallbackQueryHandler(conv.menu.apply, pattern=f"^{CallbackData.apply}$"),
+                CallbackQueryHandler(conv.menu.main, pattern=f"^{CallbackData.main}$"),
+            ],
+            ConversationManager.State.MENU_APPLY: [
+                CallbackQueryHandler(conv.menu.course, pattern=f"^{CallbackData.course}"),
+                CallbackQueryHandler(conv.menu.main, pattern=f"^{CallbackData.main}$"),
+            ],
+            ConversationManager.State.MENU_CONTACTS: [
+                CallbackQueryHandler(conv.menu.main, pattern=f"^{CallbackData.main}$"),
+            ],
+            ConversationManager.State.MENU_COURSE: [
+                CallbackQueryHandler(conv.menu.select, pattern=f"^{CallbackData.select}"),
+                CallbackQueryHandler(conv.menu.remove, pattern=f"^{CallbackData.remove}"),
+                CallbackQueryHandler(conv.menu.main, pattern=f"^{CallbackData.main}$"),
+            ],
+            ConversationManager.State.MENU_MYCOURSES: [
+                CallbackQueryHandler(conv.menu.course, pattern=f"^{CallbackData.course}"),
+                CallbackQueryHandler(conv.menu.main, pattern=f"^{CallbackData.main}$"),
+            ],
         },
         conversation_timeout=None,
         persistent=True,

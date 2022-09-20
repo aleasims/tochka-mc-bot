@@ -77,8 +77,13 @@ class DatabaseManager:
         application.save()
 
     @sync_to_async
-    def delete_application(self, user: User, course: Course):
-        Application.objects.filter(user=user, course=course).delete()
+    def get_applications(self, user_id: int) -> List[Application]:
+        applications = list(Application.objects.filter(user=user_id))
+        return applications
+
+    @sync_to_async
+    def delete_application(self, user_id: int, course_id: int):
+        Application.objects.filter(user=user_id, course=course_id).delete()
 
     @sync_to_async
     def get_all_messages(self) -> List[Message]:
