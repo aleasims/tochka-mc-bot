@@ -63,8 +63,7 @@ def build_app() -> Application:
                 CallbackQueryHandler(conv.menu_no_getting, pattern='^menu_no_getting$'),
                 CallbackQueryHandler(conv.courses, pattern='^courses'),
                 CallbackQueryHandler(conv.select_this_cource, pattern='^select'),
-                CallbackQueryHandler(conv.final_select, pattern='^final_select'),
-                CallbackQueryHandler(conv.menu, pattern='^menu$'),
+                CallbackQueryHandler(conv.final_select, pattern='^final_select')
                 # CallbackQueryHandler(conv.check, pattern='^check$'),
                 ]
         },

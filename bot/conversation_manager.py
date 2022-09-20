@@ -144,7 +144,8 @@ class ConversationManager:
         ]
         reply_markup = InlineKeyboardMarkup(menu)
         reply = f"Читай про курсы и записывайся на занятия!"
-        await update.message.reply_text(reply, reply_markup=reply_markup)
+        photo_path = 'bot/static/cources/photo/Фиолетовая_мастерская.jpeg' # 'bot/static/cources/photo/Бирюзовая_мастерская.png'
+        await update.message.reply_photo(photo=open(photo_path, 'rb'), caption=reply, reply_markup=reply_markup)
         return self.State.MAIN_MENU
 
     async def menu(self, update: Update, _: ContextTypes.DEFAULT_TYPE) -> State:
@@ -163,8 +164,9 @@ class ConversationManager:
         ]
         reply_markup = InlineKeyboardMarkup(menu)
         reply = f"Читай про курсы и записывайся на занятия!"
-        await query.message.reply_text(
-            text=reply, reply_markup=reply_markup
+        await query.message.edit_media(media=open('bot/static/cources/photo/Бирюзовая_мастерская.png', 'rb'))    
+        await query.message.edit_caption(
+            caption=reply, reply_markup=reply_markup
         ) 
         return self.State.MAIN_MENU
 
@@ -179,7 +181,7 @@ class ConversationManager:
         ]
 
         reply_markup = InlineKeyboardMarkup(keyboard)
-        await query.edit_message_text(text=self.static.texts["menu_description.txt"],
+        await query.message.edit_caption(caption=self.static.texts["menu_description.txt"],
                                       reply_markup=reply_markup)
         return self.State.MAIN_MENU
 
@@ -193,7 +195,7 @@ class ConversationManager:
         ]
 
         reply_markup = InlineKeyboardMarkup(keyboard)
-        await query.edit_message_text(text=self.static.texts["menu_call.txt"],
+        await query.message.edit_caption(caption=self.static.texts["menu_call.txt"],
                                       reply_markup=reply_markup)
         return self.State.MAIN_MENU
 
@@ -217,7 +219,7 @@ class ConversationManager:
         keyboard.append([InlineKeyboardButton("Вернуться в меню", callback_data='menu')])
 
         reply_markup = InlineKeyboardMarkup(keyboard, one_time_keyboard=True)
-        await query.edit_message_text(text=self.static.texts["menu_join.txt"],
+        await query.message.edit_caption(caption=self.static.texts["menu_join.txt"],
                                       reply_markup=reply_markup)
 
         return self.State.MAIN_MENU
@@ -230,7 +232,7 @@ class ConversationManager:
         course = await self.db.get_course(course_id)
 
         keyboard = [
-            [InlineKeyboardButton("Записаться на этот курс", callback_data=f'select_{str(order)}')],
+            [InlineKeyboardButton("Записаться на этот курс", callback_data=f'select_{str(course_id)}')],
             # [InlineKeyboardButton("Хочу на актёрку, но не могу в это время", callback_data='menu')],
             [InlineKeyboardButton("Назад в меню", callback_data='menu')]
         ]
@@ -239,7 +241,7 @@ class ConversationManager:
         # reply = f"Описание {order}"
         reply = course.description
 
-        photo_path = 'bot/text_data/cources/photo/' + course.img_path
+        photo_path = 'bot/static/cources/photo/' + course.img_path
         print(photo_path)
 
         if len(reply) > 999:
@@ -265,7 +267,7 @@ class ConversationManager:
 
         reply_markup = InlineKeyboardMarkup(keyboard, one_time_keyboard=True)
 
-        await query.message.reply_text(text='\nРегистрация на курс\n', reply_markup=reply_markup
+        await query.message.edit_caption(caption='\nРегистрация на курс\n', reply_markup=reply_markup
         ) 
         return self.State.MAIN_MENU
 
@@ -296,7 +298,7 @@ class ConversationManager:
     # async def check(self, update: Update, _context: ContextTypes.DEFAULT_TYPE) -> Union[int, None]:
     #     query = update.callback_query
     #     await query.answer()
-    #     # reply = ''.join(open('bot/text_data/menu_join.txt', 'r').readlines())
+    #     # reply = ''.join(open('bot/static/menu_join.txt', 'r').readlines())
     #     reply = 'Список курсов, на которые ты отправил заявки.'
 
     #     keyboard = []
