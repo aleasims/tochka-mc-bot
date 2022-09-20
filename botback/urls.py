@@ -14,14 +14,11 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path
-
-from django.urls import path, include
+from django.urls import include, path
+from panel.views import (ApplicationViewSet, CourseViewSet, MessageViewSet,
+                         ScheduledMessageViewSet, TGAdminViewSet, UserViewSet)
 from rest_framework import routers
 
-from panel.views import TGAdminViewSet, UserViewSet, CourseViewSet, ApplicationViewSet, MessageViewSet, ScheduledMessageViewSet
-
-# Routers provide an easy way of automatically determining the URL conf.
 router = routers.DefaultRouter()
 router.register(r'tg_admins', TGAdminViewSet)
 router.register(r'users', UserViewSet)
@@ -30,10 +27,8 @@ router.register(r'applications', ApplicationViewSet)
 router.register(r'messages', MessageViewSet)
 router.register(r'scheduled_messages', ScheduledMessageViewSet)
 
-# Wire up our API using automatic URL routing.
-# Additionally, we include login URLs for the browsable API.
 urlpatterns = [
-    path('', include(router.urls)),
     path('admin/', admin.site.urls),
+    path('api/', include(router.urls)),
     path('api-auth/', include('rest_framework.urls', namespace='rest_framework'))
 ]
