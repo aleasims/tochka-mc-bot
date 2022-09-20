@@ -169,3 +169,6 @@ static/
 
 # This must be stored in private
 config.json
+
+# log files
+*.log
