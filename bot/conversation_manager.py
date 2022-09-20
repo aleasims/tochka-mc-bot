@@ -58,7 +58,7 @@ class ConversationManager:
         logging.info(f"Started conversation - TG_ID={tg_id}")
 
         user = await self.db.get_user(tg_id)
-        if user is None:
+        if (user is None) or (user.surname is None) or (user.group_id is None):
             await update.message.reply_text(self.static.texts["start_hello_get_name.txt"])
             return self.State.REGISTER_NAME
 
