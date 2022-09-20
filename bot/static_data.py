@@ -11,7 +11,7 @@ def collect_static(prefix: str) -> StaticData:
     texts = {}
     for path in Path(prefix).rglob("*.txt"):
         with open(path) as f:
-            texts[path.name] = '\n'.join(f.readlines())
+            texts[path.name] = f.read()
 
     images = {}
     for path in Path(prefix).rglob("*.jpg"):
