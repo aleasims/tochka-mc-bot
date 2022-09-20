@@ -56,9 +56,3 @@ class ScheduledMessageViewSet(viewsets.ModelViewSet):
     queryset = ScheduledMessage.objects.all()
     serializer_class = ScheduledMessageSerializer
     permission_classes = [permissions.IsAuthenticated]
-
-
-
-
-def index(request: HttpRequest):
-    return HttpResponse("Panel page will be here")
