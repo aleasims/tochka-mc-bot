@@ -94,7 +94,7 @@ class ConversationManager:
 
         await self.db.update_user(tg_id, group_id=group_id)
 
-        self.menu.intro(update, context)
+        await self.menu.intro(update, context)
         return self.State.MENU_MAIN
 
     async def stop(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
