@@ -20,7 +20,7 @@
     },
     "scripts": {
         "start": "REACT_APP_API_URL=http://167.99.33.0/api react-scripts start",
-        "build": "react-scripts build",
+        "build": "REACT_APP_API_URL=http://167.99.33.0/api react-scripts build",
         "test": "react-scripts test --env=jsdom",
         "eject": "react-scripts eject"
     },
