@@ -59,3 +59,10 @@ class ScheduledMessageViewSet(viewsets.ModelViewSet):
     queryset = ScheduledMessage.objects.all()
     serializer_class = ScheduledMessageSerializer
     permission_classes = [permissions.IsAuthenticated]
+
+    def get_serializer(self, *args, **kwargs):
+        serializer_class = self.get_serializer_class()
+        kwargs.setdefault('context', self.get_serializer_context())
+        if self.action == 'create' and isinstance(kwargs.get('data', {}), list):
+            kwargs['many'] = True
+        return serializer_class(*args, **kwargs)
