@@ -15,6 +15,7 @@ class AdminConversationManager:
         "/registered - list all registered users",
         "/messages - list all created messages",
         "/scheduled - list all scheduled messages",
+        "/send ID - send message with given ID",
         "/sendall - send all scheduled messages",
         "/stop - stop conversation",
     ])
@@ -64,7 +65,7 @@ class AdminConversationManager:
             await update.message.reply_text("No messages.")
             return
         for message in messages:
-            await update.message.reply_text(message.text)
+            await update.message.reply_text(f"(ID={message.id})\n{message.text}")
 
     async def scheduled(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         tg_id = update.message.from_user.id
@@ -89,3 +90,8 @@ class AdminConversationManager:
             message = await self.db.get_message(scheduled.message_id)
             await context.bot.send_message(scheduled.recipient_id, message.text)
             await self.db.delete_scheduled_message(scheduled.id)
+
+    async def send(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        tg_id = update.message.from_user.id
+        logging.info(f"admin.send - TG_ID={tg_id}")
+        logging.info(f"TEXT={update.message.text}")
