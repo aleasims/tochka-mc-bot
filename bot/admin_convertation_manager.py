@@ -79,7 +79,7 @@ class AdminConversationManager:
             recipients = ', '.join([
                 str(user) for user in await self.db.get_recipients(message)
             ])
-            await update.message.reply_text(f"{message.text}\n\nTo: {recipients}")
+            await update.message.reply_text(f"(ID={message.id})\n{message.text}\n\nTo: {recipients}")
 
     async def send_all(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         tg_id = update.message.from_user.id
