@@ -112,8 +112,8 @@ class AdminConversationManager:
 
         message = await self.db.get_message(message_id)
         scheduled = await self.db.get_all_scheduled_messages()
-        this_scheduled = list(filter(lambda x: x.message == message, scheduled))
+        this_scheduled = list(filter(lambda x: x.message_id == message.id, scheduled))
 
         for sc in this_scheduled:
-            await context.bot.send_message(sc.recipient.id, message.text)
+            await context.bot.send_message(sc.recipient_id, message.text)
             await self.db.delete_scheduled_message(sc.id)
