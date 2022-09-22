@@ -46,7 +46,8 @@ def build_app() -> Application:
                 CommandHandler("messages", conv.admin.messages),
                 CommandHandler("scheduled", conv.admin.scheduled),
                 CommandHandler("send", conv.admin.send),
-                CommandHandler("sendall", conv.admin.send_all),
+                CommandHandler("sendtoall", conv.admin.send_to_all),
+                CommandHandler("flush", conv.admin.flush),
             ],
             ConversationManager.State.REGISTER_NAME: [
                 MessageHandler(filters.TEXT & (~ filters.COMMAND), conv.register_name),

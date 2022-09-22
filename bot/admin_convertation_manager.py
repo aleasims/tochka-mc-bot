@@ -16,7 +16,8 @@ class AdminConversationManager:
         "/messages - list all created messages",
         "/scheduled - list all scheduled messages",
         "/send ID - send message with given ID",
-        "/sendall - send all scheduled messages",
+        "/sendtoall - send message with given ID to all registered users",
+        "/flush - send all scheduled messages",
         "/stop - stop conversation",
     ])
 
@@ -81,9 +82,9 @@ class AdminConversationManager:
             ])
             await update.message.reply_text(f"(ID={message.id})\n{message.text}\n\nTo: {recipients}")
 
-    async def send_all(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+    async def flush(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         tg_id = update.message.from_user.id
-        logging.info(f"admin.send_all - TG_ID={tg_id}")
+        logging.info(f"admin.flush - TG_ID={tg_id}")
 
         msgs = await self.db.get_all_scheduled_messages()
         for scheduled in msgs:
@@ -101,7 +102,7 @@ class AdminConversationManager:
                 f"Invalid command: `{update.message.text}`"
             )
             return
-        
+
         try:
             message_id = int(commands[1])
         except ValueError:
@@ -117,3 +118,28 @@ class AdminConversationManager:
         for sc in this_scheduled:
             await context.bot.send_message(sc.recipient_id, message.text)
             await self.db.delete_scheduled_message(sc.id)
+
+    async def send_to_all(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        tg_id = update.message.from_user.id
+        logging.info(f"admin.send_to_all - TG_ID={tg_id}")
+        commands = update.message.text.split(" ")
+
+        if not len(commands) == 2:
+            await update.message.reply_text(
+                f"Invalid command: `{update.message.text}`"
+            )
+            return
+
+        try:
+            message_id = int(commands[1])
+        except ValueError:
+            await update.message.reply_text(
+                f"Invalid command: `{update.message.text}`"
+            )
+            return
+
+        message = await self.db.get_message(message_id)
+        users = await self.db.get_all_users()
+
+        for user in users:
+            await context.bot.send_message(user.id, message.text)
