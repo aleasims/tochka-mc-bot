@@ -36,6 +36,10 @@ class MessageSerializer(serializers.HyperlinkedModelSerializer):
 
 
 class ScheduledMessageSerializer(serializers.HyperlinkedModelSerializer):
+    def __init__(self, *args, **kwargs):
+        many = kwargs.pop('many', True)
+        super().__init__(many=many, *args, **kwargs)
+
     class Meta:
         model = ScheduledMessage
         fields = ['id', 'message', 'recipient']
