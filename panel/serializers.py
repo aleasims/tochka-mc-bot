@@ -4,42 +4,38 @@ from .models import (Application, Course, Message, ScheduledMessage, TGAdmin,
                      User)
 
 
-class TGAdminSerializer(serializers.HyperlinkedModelSerializer):
+class TGAdminSerializer(serializers.ModelSerializer):
     class Meta:
         model = TGAdmin
         fields = ['tg_id', 'name']
 
 
-class UserSerializer(serializers.HyperlinkedModelSerializer):
+class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['tg_id', 'name', 'surname', 'group_id']
 
 
-class CourseSerializer(serializers.HyperlinkedModelSerializer):
+class CourseSerializer(serializers.ModelSerializer):
     class Meta:
         model = Course
         fields = ['id', 'name', 'description', 'who',
                   'where', 'day', 'time', 'img_path', 'order']
 
 
-class ApplicationSerializer(serializers.HyperlinkedModelSerializer):
+class ApplicationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Application
         fields = ['id', 'user', 'course']
 
 
-class MessageSerializer(serializers.HyperlinkedModelSerializer):
+class MessageSerializer(serializers.ModelSerializer):
     class Meta:
         model = Message
         fields = ['id', 'text']
 
 
-class ScheduledMessageSerializer(serializers.HyperlinkedModelSerializer):
-    def __init__(self, *args, **kwargs):
-        many = kwargs.pop('many', True)
-        super().__init__(many=many, *args, **kwargs)
-
+class ScheduledMessageSerializer(serializers.ModelSerializer):
     class Meta:
         model = ScheduledMessage
         fields = ['id', 'message', 'recipient']
