@@ -94,4 +94,26 @@ class AdminConversationManager:
     async def send(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         tg_id = update.message.from_user.id
         logging.info(f"admin.send - TG_ID={tg_id}")
-        logging.info(f"TEXT={update.message.text}")
+        commands = update.message.text.split(" ")
+
+        if not len(commands) == 2:
+            await update.message.reply_text(
+                f"Invalid command: `{update.message.text}`"
+            )
+            return
+        
+        try:
+            message_id = int(commands[1])
+        except ValueError:
+            await update.message.reply_text(
+                f"Invalid command: `{update.message.text}`"
+            )
+            return
+
+        message = await self.db.get_message(message_id)
+        scheduled = await self.db.get_all_scheduled_messages()
+        this_scheduled = list(filter(lambda x: x.message == message, scheduled))
+
+        for sc in this_scheduled:
+            await context.bot.send_message(sc.recipient.id, message.text)
+            await self.db.delete_scheduled_message(sc.id)

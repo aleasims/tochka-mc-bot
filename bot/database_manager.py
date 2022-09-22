@@ -102,7 +102,7 @@ class DatabaseManager:
         return list(ScheduledMessage.objects.all())
 
     @sync_to_async
-    def get_recipients(self, message: Message) -> List[ScheduledMessage]:
+    def get_recipients(self, message: Message) -> List[User]:
         return list(sc.recipient for sc in ScheduledMessage.objects.filter(message=message))
 
     @sync_to_async
