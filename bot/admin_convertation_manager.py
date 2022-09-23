@@ -3,6 +3,7 @@ import logging
 
 from telegram import Update
 from telegram.ext import ContextTypes
+from telegram.error import Forbidden
 
 from panel.models import Message, User
 
@@ -142,4 +143,9 @@ class AdminConversationManager:
         users = await self.db.get_all_users()
 
         for user in users:
-            await context.bot.send_message(user.id, message.text)
+            try:
+                await context.bot.send_message(user.tg_id, message.text)
+            except Forbidden:
+                await update.message.reply_text(
+                    f"Invalid command for {user.name} {user.surname} ({user.tg_id}): `{update.message.text}`"
+                )
