@@ -29,13 +29,13 @@ class User(models.Model):
                             name='name',
                             max_length=100)
     surname = models.CharField(verbose_name='Фамилия',
-                            name='surname',
-                            max_length=100,
-                            blank=True)
+                               name='surname',
+                               max_length=100,
+                               blank=True)
     group_id = models.CharField(verbose_name='Номер группы',
-                            name='group_id',
-                            max_length=100,
-                            blank=True)
+                                name='group_id',
+                                max_length=100,
+                                blank=True)
 
     class Meta:
         verbose_name = 'Участник'
@@ -54,20 +54,20 @@ class Course(models.Model):
                                    name='description',
                                    blank=False)
     who = models.CharField(verbose_name='Преподаватели',
-                            name='who',
-                            max_length=200)
+                           name='who',
+                           max_length=200)
     where = models.CharField(verbose_name='Место',
-                            name='where',
-                            max_length=200)
+                             name='where',
+                             max_length=200)
     day = models.CharField(verbose_name='День недели',
-                            name='day',
-                            max_length=200)
+                           name='day',
+                           max_length=200)
     time = models.CharField(verbose_name='Время',
                             name='time',
                             max_length=200)
     img_path = models.CharField(verbose_name='Картинка',
-                            name='img_path',
-                            max_length=200, blank=True)
+                                name='img_path',
+                                max_length=200, blank=True)
     order = models.IntegerField(verbose_name='Порядковый номер',
                                 name='order',
                                 default=1)
