@@ -1,4 +1,4 @@
-from rest_framework import permissions, viewsets
+from rest_framework import viewsets
 
 from .models import (Application, Course, Message, ScheduledMessage, TGAdmin,
                      User)
@@ -13,7 +13,6 @@ class TGAdminViewSet(viewsets.ModelViewSet):
     """
     queryset = TGAdmin.objects.all().order_by('-name')
     serializer_class = TGAdminSerializer
-    permission_classes = [permissions.IsAuthenticated]
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -22,7 +21,6 @@ class UserViewSet(viewsets.ModelViewSet):
     """
     queryset = User.objects.all().order_by('-name')
     serializer_class = UserSerializer
-    permission_classes = [permissions.IsAuthenticated]
 
 
 class CourseViewSet(viewsets.ModelViewSet):
@@ -31,7 +29,6 @@ class CourseViewSet(viewsets.ModelViewSet):
     """
     queryset = Course.objects.all().order_by('-order')
     serializer_class = CourseSerializer
-    permission_classes = [permissions.IsAuthenticated]
 
 
 class ApplicationViewSet(viewsets.ModelViewSet):
@@ -40,7 +37,6 @@ class ApplicationViewSet(viewsets.ModelViewSet):
     """
     queryset = Application.objects.all()
     serializer_class = ApplicationSerializer
-    permission_classes = [permissions.IsAuthenticated]
 
 
 class MessageViewSet(viewsets.ModelViewSet):
@@ -49,7 +45,6 @@ class MessageViewSet(viewsets.ModelViewSet):
     """
     queryset = Message.objects.all()
     serializer_class = MessageSerializer
-    permission_classes = [permissions.IsAuthenticated]
 
 
 class ScheduledMessageViewSet(viewsets.ModelViewSet):
@@ -58,7 +53,6 @@ class ScheduledMessageViewSet(viewsets.ModelViewSet):
     """
     queryset = ScheduledMessage.objects.all()
     serializer_class = ScheduledMessageSerializer
-    permission_classes = [permissions.IsAuthenticated]
 
     def get_serializer(self, *args, **kwargs):
         serializer_class = self.get_serializer_class()
