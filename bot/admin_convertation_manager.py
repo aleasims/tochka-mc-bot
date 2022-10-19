@@ -1,13 +1,11 @@
-from email import message
 import logging
 
 from telegram import Update
-from telegram.ext import ContextTypes
 from telegram.error import Forbidden
-
-from panel.models import Message, User
+from telegram.ext import ContextTypes
 
 from .database_manager import DatabaseManager
+
 
 class AdminConversationManager:
     """Handlers for admin mode."""
