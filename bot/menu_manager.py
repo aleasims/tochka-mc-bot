@@ -118,7 +118,7 @@ class MenuManager:
             keyboard.append([ button ])
         keyboard.append([ Buttons.main ])
 
-        reply_markup = InlineKeyboardMarkup(keyboard, one_time_keyboard=True)
+        reply_markup = InlineKeyboardMarkup(keyboard) #, one_time_keyboard=True)
 
         await update.callback_query.answer()
         await update.callback_query.delete_message()
@@ -153,7 +153,7 @@ class MenuManager:
             [ button ],
             [ Buttons.main ]
         ]
-        reply_markup = InlineKeyboardMarkup(keyboard, one_time_keyboard=True)
+        reply_markup = InlineKeyboardMarkup(keyboard) #, one_time_keyboard=True)
 
         await update.callback_query.message.edit_media(
             InputMediaPhoto(self.static.images[course.img_path])
@@ -183,7 +183,7 @@ class MenuManager:
                 [ button ],
                 [ Buttons.main ]
             ]
-            reply_markup = InlineKeyboardMarkup(keyboard, one_time_keyboard=True)
+            reply_markup = InlineKeyboardMarkup(keyboard) #, one_time_keyboard=True)
             await update.callback_query.message.edit_reply_markup(reply_markup)
 
             await query.answer(f"Вы записались на курс {course.name}")
@@ -206,7 +206,7 @@ class MenuManager:
                 [ button ],
                 [ Buttons.main ]
             ]
-            reply_markup = InlineKeyboardMarkup(keyboard, one_time_keyboard=True)
+            reply_markup = InlineKeyboardMarkup(keyboard) #, one_time_keyboard=True)
             await update.callback_query.message.edit_reply_markup(reply_markup)
 
             await query.answer(f"Вы покинули курс {course.name}")
@@ -234,7 +234,7 @@ class MenuManager:
 
         keyboard.append([ Buttons.main ])
 
-        reply_markup = InlineKeyboardMarkup(keyboard, one_time_keyboard=True)
+        reply_markup = InlineKeyboardMarkup(keyboard) #, one_time_keyboard=True)
 
         await update.callback_query.answer()
         await update.callback_query.delete_message()

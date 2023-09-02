@@ -1,7 +1,7 @@
 from asgiref.sync import sync_to_async
 
 from panel.models import (Course, Application, User,
-                          TGAdmin, Message, ScheduledMessage)
+                          TGAdmin, Message, ScheduledMessage, GroupedScheduledMessage)
 
 from typing import List, Optional
 
@@ -100,11 +100,24 @@ class DatabaseManager:
     @sync_to_async
     def get_all_scheduled_messages(self) -> List[ScheduledMessage]:
         return list(ScheduledMessage.objects.all())
+    
+    @sync_to_async
+    def get_all_grouped_scheduled_messages(self) -> List[ScheduledMessage]:
+        return list(GroupedScheduledMessage.objects.all())
 
     @sync_to_async
     def get_recipients(self, message: Message) -> List[User]:
         return list(sc.recipient for sc in ScheduledMessage.objects.filter(message=message))
+    
+    @sync_to_async    
+    def get_recipients_from_grouped(self, message: Message) -> List[User]:
+        courses = list(sc.group for sc in GroupedScheduledMessage.objects.filter(message=message))
+        return list(_a.user for c in courses for _a in Application.objects.filter(course=c))
 
     @sync_to_async
     def delete_scheduled_message(self, id_: int):
         ScheduledMessage.objects.filter(id=id_).delete()
+
+    @sync_to_async
+    def delete_grouped_scheduled_message(self, id_: int):
+        GroupedScheduledMessage.objects.filter(id=id_).delete()

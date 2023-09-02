@@ -4,7 +4,8 @@ from .models import (Application, Course, Message, ScheduledMessage, TGAdmin,
                      User)
 from .serializers import (ApplicationSerializer, CourseSerializer,
                           MessageSerializer, ScheduledMessageSerializer,
-                          TGAdminSerializer, UserSerializer)
+                          TGAdminSerializer, UserSerializer,
+                          GroupedScheduledMessageSerializer)
 
 
 class TGAdminViewSet(viewsets.ModelViewSet):
@@ -53,6 +54,20 @@ class ScheduledMessageViewSet(viewsets.ModelViewSet):
     """
     queryset = ScheduledMessage.objects.all()
     serializer_class = ScheduledMessageSerializer
+
+    def get_serializer(self, *args, **kwargs):
+        serializer_class = self.get_serializer_class()
+        kwargs.setdefault('context', self.get_serializer_context())
+        if self.action == 'create' and isinstance(kwargs.get('data', {}), list):
+            kwargs['many'] = True
+        return serializer_class(*args, **kwargs)
+
+class GroupedScheduledMessageViewSet(viewsets.ModelViewSet):
+    """
+    API endpoint that allows ScheduledMessages to be viewed or edited.
+    """
+    queryset = ScheduledMessage.objects.all()
+    serializer_class = GroupedScheduledMessageSerializer
 
     def get_serializer(self, *args, **kwargs):
         serializer_class = self.get_serializer_class()
