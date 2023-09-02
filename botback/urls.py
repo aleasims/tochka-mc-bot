@@ -16,7 +16,8 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import include, path
 from panel.views import (ApplicationViewSet, CourseViewSet, MessageViewSet,
-                         ScheduledMessageViewSet, TGAdminViewSet, UserViewSet)
+                         ScheduledMessageViewSet, GroupedScheduledMessageViewSet,
+                         TGAdminViewSet, UserViewSet)
 from rest_framework import routers
 
 router = routers.DefaultRouter()
@@ -26,6 +27,7 @@ router.register(r'courses', CourseViewSet)
 router.register(r'applications', ApplicationViewSet)
 router.register(r'messages', MessageViewSet)
 router.register(r'scheduled_messages', ScheduledMessageViewSet)
+router.register(r'grouped_scheduled_messages', GroupedScheduledMessageViewSet)
 
 urlpatterns = [
     path('admin/', admin.site.urls),

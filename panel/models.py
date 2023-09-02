@@ -135,3 +135,24 @@ class ScheduledMessage(models.Model):
 
     def __str__(self):
         return "{} -> {}".format(self.message, self.recipient)
+
+
+class GroupedScheduledMessage(models.Model):
+    """Message is scheduled to send to some user."""
+
+    message = models.ForeignKey(Message,
+                                on_delete=models.PROTECT,
+                                verbose_name='Сообщение',
+                                name='message')
+
+    group = models.ForeignKey(Course,
+                              on_delete=models.PROTECT,
+                              verbose_name='Группа получателей',
+                              name='group')
+
+    class Meta:
+        verbose_name = 'Запланированная групповая отправка'
+        verbose_name_plural = 'Запланированные групповые отправки'
+
+    def __str__(self):
+        return "{} -> {}".format(self.message, self.group)

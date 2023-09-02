@@ -76,9 +76,10 @@ class AdminConversationManager:
             await update.message.reply_text("No messages.")
             return
         for message in messages:
-            recipients = ', '.join([
-                str(user) for user in await self.db.get_recipients(message)
-            ])
+            individual_users = await self.db.get_recipients(message)
+            grouped_users = await self.db.get_recipients_from_grouped(message)
+            users = list(set(individual_users + grouped_users))
+            recipients = ', '.join([str(user) for user in users])
             await update.message.reply_text(f"(ID={message.id})\n{message.text}\n\nTo: {recipients}")
 
     async def flush(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -113,9 +114,19 @@ class AdminConversationManager:
         message = await self.db.get_message(message_id)
         scheduled = await self.db.get_all_scheduled_messages()
         this_scheduled = list(filter(lambda x: x.message_id == message.id, scheduled))
+        individual_recepients = await self.db.get_recipients(message)
+
+        grouped_scheduled = await self.db.get_all_grouped_scheduled_messages()
+        this_grouped_scheduled = list(filter(lambda x: x.message_id == message.id, grouped_scheduled))
+        grouped_recepients = await self.db.get_recipients_from_grouped(message)
+
+        recepients = list(set(individual_recepients + grouped_recepients))
+        for recepient in recepients:
+            await context.bot.send_message(recepient.tg_id, message.text)
 
         for sc in this_scheduled:
-            await context.bot.send_message(sc.recipient_id, message.text)
+            await self.db.delete_scheduled_message(sc.id)
+        for sc in this_grouped_scheduled:
             await self.db.delete_scheduled_message(sc.id)
 
     async def send_to_all(self, update: Update, context: ContextTypes.DEFAULT_TYPE):

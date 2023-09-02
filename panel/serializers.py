@@ -1,7 +1,8 @@
 from rest_framework import serializers
 
-from .models import (Application, Course, Message, ScheduledMessage, TGAdmin,
-                     User)
+from .models import (Application, Course, Message, 
+                     ScheduledMessage, GroupedScheduledMessage,
+                     TGAdmin, User)
 
 
 class TGAdminSerializer(serializers.ModelSerializer):
@@ -39,3 +40,9 @@ class ScheduledMessageSerializer(serializers.ModelSerializer):
     class Meta:
         model = ScheduledMessage
         fields = ['id', 'message', 'recipient']
+
+
+class GroupedScheduledMessageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = GroupedScheduledMessage
+        fields = ['id', 'message', 'group']
