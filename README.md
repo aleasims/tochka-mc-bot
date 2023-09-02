@@ -25,6 +25,7 @@ pip install -r requirements.txt
 export PYTHONPATH=.
 export DJANGO_SETTINGS_MODULE=botback.settings.dev
 export TG_TOKEN=YOUR_SECRET_TG_TOKEN
+python3 bot/fill_courses.py
 python3 bot/main.py 
 ```
 
