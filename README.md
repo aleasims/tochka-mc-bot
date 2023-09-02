@@ -27,3 +27,13 @@ export DJANGO_SETTINGS_MODULE=botback.settings.dev
 export TG_TOKEN=YOUR_SECRET_TG_TOKEN
 python3 bot/main.py 
 ```
+
+## Run web app (locally)
+
+```bash
+python manage.py createsuperuser
+python manage.py runserver
+```
+
+app: http://127.0.0.1:8000/admin
+
